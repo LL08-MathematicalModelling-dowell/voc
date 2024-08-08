@@ -1,9 +1,19 @@
-import React from 'react'
+import { Route, Routes } from "react-router-dom";
+import Report from './Pages/Report';
+import Login from './Pages/Login';
+import UserDetails from './Pages/UserDetails';
+import ScaleDetails from './Pages/ScaleDetails';
 
-function App() {
+const App = () =>{
   return (
-    <h1 className="text-3xl font-bold underline text-center">Hello world!</h1> 
-  )
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/report" element={<Report />} />
+      <Route path="/userdetails" element={<UserDetails />} />
+      <Route path="/scaledetails" element={<ScaleDetails />} />
+      
+    </Routes>
+  );
 }
 
 export default App
