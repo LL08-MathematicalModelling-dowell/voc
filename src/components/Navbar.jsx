@@ -27,7 +27,7 @@ const Navbar = () => {
   const logOut = () => {
 
     localStorage.removeItem("accessToken");
-    navigate("/login");
+    navigate("/voc/");
   }
 
   return (
@@ -69,7 +69,7 @@ const Navbar = () => {
 
               <li>
                 <NavLink
-                  to="/report"
+                  to="/voc/reports"
                   className={({ isActive }) =>
                     isActive ? "font-bold text-deepblue" : ""
                   }
@@ -80,7 +80,7 @@ const Navbar = () => {
               </li>
               <li>
                 <NavLink
-                  to="/userdetails"
+                  to="/voc/userdetails"
                   className={({ isActive }) =>
                     isActive ? "font-bold text-deepblue" : ""
                   }
@@ -91,7 +91,7 @@ const Navbar = () => {
               </li>
               <li>
                 <NavLink
-                  to="/scaledetails"
+                  to="/voc/scaledetails"
                   className={({ isActive }) =>
                     isActive ? "font-bold text-deepblue" : ""
                   }
@@ -108,7 +108,7 @@ const Navbar = () => {
 
             <li>
               <NavLink
-                to="/report"
+                to="/voc/reports"
                 className={({ isActive }) =>
                   isActive ? "font-bold text-deepblue" : ""
                 }
@@ -118,7 +118,7 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink
-                to="/userdetails"
+                to="/voc/userdetails"
                 className={({ isActive }) =>
                   isActive ? "font-bold text-deepblue" : ""
                 }
@@ -128,7 +128,7 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink
-                to="/scaledetails"
+                to="/voc/scaledetails"
                 className={({ isActive }) =>
                   isActive ? "font-bold text-deepblue" : ""
                 }

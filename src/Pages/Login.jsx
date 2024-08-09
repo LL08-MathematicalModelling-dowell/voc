@@ -8,9 +8,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [healthStatus, setHealthStatus] = useState(null);
   const [formData, setFormData] = useState({
-    workspace: "",
-    portfolioId: "",
-    password: "",
+    workspace: "6385c0f18eca0fb652c94558",
+    portfolioId: "manish",
+    password: "manish",
   });
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -47,7 +47,8 @@ const Login = () => {
       if (response.ok && result.success) {
         console.log("Login successful:", result);
         localStorage.setItem("refreshToken", result.refresh_token);
-        localStorage.setItem("workspaceId", credentials.workspace_id); // Store workspace_id
+        localStorage.setItem("accessToken", result.access_token);
+        localStorage.setItem("workspaceId", credentials.workspace_id); 
         return result;
       } else {
         console.error("Login failed:", result);
@@ -55,34 +56,6 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      throw error;
-    }
-  };
-
-  const getToken = async (refreshToken) => {
-    try {
-      const response = await fetch(
-        "https://100035.pythonanywhere.com/voc/api/v1/user-management/?type=get_access_token",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refresh_token: refreshToken }),
-        }
-      );
-
-      const tokenResult = await response.json();
-      if (response.ok && tokenResult.success) {
-        localStorage.setItem("accessToken", tokenResult.access_token);
-        console.log("Access Token:", tokenResult.access_token);
-        return tokenResult.access_token;
-      } else {
-        console.error("Token fetch failed:", tokenResult);
-        throw new Error(tokenResult.message || "Failed to fetch token");
-      }
-    } catch (error) {
-      console.error("Token fetch error:", error);
       throw error;
     }
   };
@@ -148,21 +121,8 @@ const Login = () => {
       }
 
       if (loginResponse.success) {
-        try {
-          const refreshToken = localStorage.getItem("refreshToken");
-          if (!refreshToken) {
-            throw new Error("Refresh token not found");
-          }
-          const accessToken = await getToken(refreshToken);
-          if (accessToken) {
-            navigate("/report");
-          } else {
-            setStatusMessage("Failed to retrieve access token.");
-          }
-        } catch (error) {
-          setStatusMessage("Error fetching access token.");
-          console.error("Error fetching access token:", error);
-        }
+        // No need to get an access token separately
+        navigate("/voc/reports");
       } else {
         setStatusMessage("Login failed after signup.");
         console.error("Login failed after signup.");

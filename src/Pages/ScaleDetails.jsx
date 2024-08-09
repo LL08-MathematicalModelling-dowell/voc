@@ -2,85 +2,74 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import QRCodeCard from "../components/QRCodeCard";
 import { FaCirclePlus } from "react-icons/fa6";
-// import Code from "../assets/Code.png"; 
 import { useNavigate } from "react-router-dom";
 import { decodeToken } from "../utils/tokenUtils";
 
-
 function getInstanceDisplayName(url) {
   try {
-      const urlObj = new URL(url);
-      const params = new URLSearchParams(urlObj.search);
-      return params.has('instance_display_name') ? params.get('instance_display_name') : null;
+    const urlObj = new URL(url);
+    const params = new URLSearchParams(urlObj.search);
+    return params.has('instance_display_name') ? params.get('instance_display_name') : null;
   } catch (error) {
-      return null;
+    console.log(error.message);
+    return null;
   }
 }
 
 const ScaleDetails = () => {
   const [qrCodes, setQrCodes] = useState([]);
   const [alert, setAlert] = useState("");
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const accessToken = localStorage.getItem("accessToken");
   const refreshToken = localStorage.getItem("refreshToken");
 
   useEffect(() => {
     if (!accessToken || !refreshToken) {
-      navigate("/dowelleducation/workspace-login");
+      navigate("/voc/");
     }
   }, [accessToken, refreshToken, navigate]);
 
   useEffect(() => {
     const fetchScaleDetails = async () => {
-      const token = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.error("No access token found.");
+        return;
+      }
 
-      if (token) {
-        setLoading(true); 
+      setLoading(true);
+      try {
+        const decodedPayload = decodeToken(accessToken);
+        const workspaceId = decodedPayload.workspace_id;
+        const portfolio = decodedPayload.portfolio;
 
-        try {
-          const decodedPayload = decodeToken(token);
-          const workspaceId = decodedPayload.workspace_id;
-          const portfolio = decodedPayload.portfolio;
-
-          const response = await fetch(
-            "https://100035.pythonanywhere.com/voc/api/v1/scale-management/?type=scale_details",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({
-                workspace_id: workspaceId,
-                portfolio: portfolio,
-              }),
-            }
-          );
-
-          const data = await response.json();
-          console.log("Scale Details Response:", data);
-
-          if (data.success && data.response.length > 0) {
-            setQrCodes(data.response);
-
-            // Store the scale_id in localStorage
-            const scaleId = data.response[0].scale_id;
-            localStorage.setItem("scale_id", scaleId);
-          } else {
-            setAlert("No scale found, please Create a scale for yourself");
-            setTimeout(() => setAlert(""), 3000);
-
-
-            handleButtonClick();
+        const response = await fetch(
+          "https://100035.pythonanywhere.com/voc/api/v1/scale-management/?type=scale_details",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ workspace_id: workspaceId, portfolio }),
           }
-        } catch (error) {
-          console.error("Error fetching scale details:", error.message);
-        } finally {
-          setLoading(false);
+        );
+
+        const data = await response.json();
+        console.log("Scale Details Response:", data);
+
+        if (data.success && data.response.length > 0) {
+          setQrCodes(data.response);
+          const scaleId = data.response[0].scale_id;
+          localStorage.setItem("scale_id", scaleId);
+        } else {
+          setAlert("No scale found. Please create a scale for yourself.");
+          handleButtonClick(); // Create a new scale if none exists
         }
-      } else {
-        console.error("No access token found in local storage.");
+      } catch (error) {
+        console.error("Error fetching scale details:", error.message);
+        setAlert("Error fetching scale details.");
+      } finally {
         setLoading(false);
       }
     };
@@ -89,26 +78,29 @@ const ScaleDetails = () => {
   }, [accessToken, navigate]);
 
   const handleButtonClick = async () => {
-    const token = localStorage.getItem("accessToken");
-    const decodedPayload = decodeToken(token);
-    const workspaceId = decodedPayload.workspace_id;
-    const portfolio = decodedPayload.portfolio;
-    const hardCodedData = {
-      workspace_id: workspaceId,
-      username: "manish_test error_login",
-      portfolio: portfolio,
-    };
+    if (!accessToken) {
+      console.error("No access token found.");
+      return;
+    }
 
-    setLoading(true); 
-
+    setLoading(true);
     try {
+      const decodedPayload = decodeToken(accessToken);
+      const workspaceId = decodedPayload.workspace_id;
+      const portfolio = decodedPayload.portfolio;
+      const hardCodedData = {
+        workspace_id: workspaceId,
+        username: "manish_test error_login",
+        portfolio,
+      };
+
       const response = await fetch(
         "https://100035.pythonanywhere.com/voc/api/v1/scale-management/?type=save_scale_details",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(hardCodedData),
         }
@@ -123,30 +115,33 @@ const ScaleDetails = () => {
           ...qrCodes,
           {
             id: newId,
-            imageSrc: Code,
+            imageSrc: Code, // Ensure Code is imported correctly
             qrDetails: data.qrDetails || `QR Code ${newId}`,
             scaleDetails: data.scaleDetails || "Scale Details",
           },
         ]);
         setAlert("QR Code card created successfully!");
-
- 
-        const scaleId = data.scale_id; 
-        localStorage.setItem("scale_id", scaleId);
-
-        setTimeout(() => setAlert(""), 3000);
+        localStorage.setItem("scale_id", data.scale_id);
       } else {
         setAlert(data.message || "Failed to create card.");
-        setTimeout(() => setAlert(""), 3000);
       }
     } catch (error) {
       console.error("Error creating card:", error);
       setAlert("Error creating card.");
-      setTimeout(() => setAlert(""), 3000);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (alert) {
+      const timer = setTimeout(() => {
+        setAlert("");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   return (
     <div className="max-h-screen max-w-full relative">
@@ -160,61 +155,24 @@ const ScaleDetails = () => {
           ) : (
             <div className="flex justify-center flex-col md:flex-row flex-wrap md:gap-4 p-1 gap-4">
               {qrCodes.map((qrCode) => (
-                <div
-                  key={qrCode._id}
-                  className="flex flex-col gap-6"
-                >
+                <div key={qrCode._id} className="flex flex-col gap-6">
                   <div className="flex-col flex gap-2">
-                    <h1 className="text-[25px] font-bold font-poppins">
-                      Scale Details
-                    </h1>
+                    <h1 className="text-[25px] font-bold font-poppins">Scale Details</h1>
                     <div className="flex flex-col md:flex-row gap-6 flex-wrap">
-                      <QRCodeCard
-                        imageSrc={qrCode.links_details[0].qrcode_image_url}
-                        instanceName={getInstanceDisplayName(qrCode.links_details[0].scale_link)}
-                        scaleLink={qrCode.links_details[0].scale_link}
-                        qrCodeLink={qrCode.report_link.qrcode_image_url}
-                        type="scale"
-                
-                      />
-                      <QRCodeCard
-                        imageSrc={qrCode.links_details[1].qrcode_image_url}
-                        instanceName={getInstanceDisplayName(qrCode.links_details[1].scale_link)}
-                        scaleLink={qrCode.links_details[1].scale_link}
-                        qrCodeLink={qrCode.report_link.qrcode_image_url}
-                        type="scale"
-                     
-                      />
-                      <QRCodeCard
-                        imageSrc={qrCode.links_details[2].qrcode_image_url}
-                        instanceName={getInstanceDisplayName(qrCode.links_details[2].scale_link)}
-                        scaleLink={qrCode.links_details[2].scale_link}
-                        qrCodeLink={qrCode.report_link.qrcode_image_url}
-                        type="scale"
-            
-                      />
-                      <QRCodeCard
-                        imageSrc={qrCode.links_details[3].qrcode_image_url}
-                        instanceName={getInstanceDisplayName(qrCode.links_details[3].scale_link)}
-                        scaleLink={qrCode.links_details[3].scale_link}
-                        qrCodeLink={qrCode.report_link.qrcode_image_url}
-                        type="scale"
-                   
-                      />
-                      <QRCodeCard
-                        imageSrc={qrCode.links_details[4].qrcode_image_url}
-                        instanceName={getInstanceDisplayName(qrCode.links_details[4].scale_link)}
-                        scaleLink={qrCode.links_details[4].scale_link}
-                        type="scale"
-                        qrCodeLink={qrCode.report_link.qrcode_image_url}
-               
-                      />
+                      {qrCode.links_details.map((link, idx) => (
+                        <QRCodeCard
+                          key={idx}
+                          imageSrc={link.qrcode_image_url}
+                          instanceName={getInstanceDisplayName(link.scale_link)}
+                          scaleLink={link.scale_link}
+                          qrCodeLink={qrCode.report_link.qrcode_image_url}
+                          type="scale"
+                        />
+                      ))}
                     </div>
                   </div>
                   <div className="flex-col flex gap-2">
-                    <h1 className="text-[25px] font-bold font-poppins">
-                      Report Details
-                    </h1>
+                    <h1 className="text-[25px] font-bold font-poppins">Report Details</h1>
                     <div className="flex flex-col md:flex-row gap-6">
                       <QRCodeCard
                         imageSrc={qrCode.report_link.qrcode_image_url}
@@ -222,9 +180,7 @@ const ScaleDetails = () => {
                         type="report"
                         qrCodeLink={qrCode.report_link.qrcode_image_url}
                         reportLink={qrCode.report_link.report_link}
-        
                       />
-                
                     </div>
                   </div>
                 </div>
@@ -255,7 +211,7 @@ const ScaleDetails = () => {
           </svg>
           <span className="sr-only">Info</span>
           <div>
-            <span className="font-medium"> {alert}</span>
+            <span className="font-medium">{alert}</span>
           </div>
         </div>
       )}
