@@ -6,6 +6,17 @@ import { FaCirclePlus } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { decodeToken } from "../utils/tokenUtils";
 
+
+function getInstanceDisplayName(url) {
+  try {
+      const urlObj = new URL(url);
+      const params = new URLSearchParams(urlObj.search);
+      return params.has('instance_display_name') ? params.get('instance_display_name') : null;
+  } catch (error) {
+      return null;
+  }
+}
+
 const ScaleDetails = () => {
   const [qrCodes, setQrCodes] = useState([]);
   const [alert, setAlert] = useState("");
@@ -137,13 +148,6 @@ const ScaleDetails = () => {
     }
   };
 
-  const handleCopy = (qrDetails) => {
-    navigator.clipboard.writeText(qrDetails).then(() => {
-      setAlert("QR Code copied to clipboard!");
-      setTimeout(() => setAlert(""), 3000);
-    });
-  };
-
   return (
     <div className="max-h-screen max-w-full relative">
       <Navbar />
@@ -167,53 +171,43 @@ const ScaleDetails = () => {
                     <div className="flex flex-col md:flex-row gap-6 flex-wrap">
                       <QRCodeCard
                         imageSrc={qrCode.links_details[0].qrcode_image_url}
-                        instanceName={qrCode.username}
+                        instanceName={getInstanceDisplayName(qrCode.links_details[0].scale_link)}
                         scaleLink={qrCode.links_details[0].scale_link}
                         qrCodeLink={qrCode.report_link.qrcode_image_url}
                         type="scale"
-                        onClick={() =>
-                          handleCopy(qrCode.report_link.qrcode_image_url)
-                        }
+                
                       />
                       <QRCodeCard
                         imageSrc={qrCode.links_details[1].qrcode_image_url}
-                        instanceName={qrCode.username}
+                        instanceName={getInstanceDisplayName(qrCode.links_details[1].scale_link)}
                         scaleLink={qrCode.links_details[1].scale_link}
                         qrCodeLink={qrCode.report_link.qrcode_image_url}
                         type="scale"
-                        onClick={() =>
-                          handleCopy(qrCode.report_link.qrcode_image_url)
-                        }
+                     
                       />
                       <QRCodeCard
                         imageSrc={qrCode.links_details[2].qrcode_image_url}
-                        instanceName={qrCode.username}
+                        instanceName={getInstanceDisplayName(qrCode.links_details[2].scale_link)}
                         scaleLink={qrCode.links_details[2].scale_link}
                         qrCodeLink={qrCode.report_link.qrcode_image_url}
                         type="scale"
-                        onClick={() =>
-                          handleCopy(qrCode.report_link.qrcode_image_url)
-                        }
+            
                       />
                       <QRCodeCard
                         imageSrc={qrCode.links_details[3].qrcode_image_url}
-                        instanceName={qrCode.username}
+                        instanceName={getInstanceDisplayName(qrCode.links_details[3].scale_link)}
                         scaleLink={qrCode.links_details[3].scale_link}
                         qrCodeLink={qrCode.report_link.qrcode_image_url}
                         type="scale"
-                        onClick={() =>
-                          handleCopy(qrCode.report_link.qrcode_image_url)
-                        }
+                   
                       />
                       <QRCodeCard
                         imageSrc={qrCode.links_details[4].qrcode_image_url}
-                        instanceName={qrCode.username}
+                        instanceName={getInstanceDisplayName(qrCode.links_details[4].scale_link)}
                         scaleLink={qrCode.links_details[4].scale_link}
                         type="scale"
                         qrCodeLink={qrCode.report_link.qrcode_image_url}
-                        onClick={() =>
-                          handleCopy(qrCode.report_link.qrcode_image_url)
-                        }
+               
                       />
                     </div>
                   </div>
@@ -228,20 +222,9 @@ const ScaleDetails = () => {
                         type="report"
                         qrCodeLink={qrCode.report_link.qrcode_image_url}
                         reportLink={qrCode.report_link.report_link}
-                        onClick={() =>
-                          handleCopy(qrCode.report_link.qrcode_image_url)
-                        }
+        
                       />
-                      <QRCodeCard
-                        imageSrc={qrCode.report_link.qrcode_image_url}
-                        instanceName={qrCode.username}
-                        type="report"
-                        qrCodeLink={qrCode.report_link.qrcode_image_url}
-                        reportLink={qrCode.report_link.report_link}
-                        onClick={() =>
-                          handleCopy(qrCode.report_link.qrcode_image_url)
-                        }
-                      />
+                
                     </div>
                   </div>
                 </div>

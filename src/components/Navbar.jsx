@@ -158,15 +158,6 @@ const Navbar = () => {
                         Settings
                       </a>
                     </li>
-                    <li className="flex items-center py-2 border-b ">
-                      <FaTasks className="size-4" />
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm font-semibold text-black hover:text-green-800"
-                      >
-                        Tasks
-                      </a>
-                    </li>
                     <li className="flex items-center py-2 border-b" onClick={logOut}>
                       <BiLogOut className="size-4.5" />
                       <a

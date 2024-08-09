@@ -837,6 +837,8 @@ console.log("here is the data",data);
 
 
 
+
+
 let uniqueInstanceNames = {};
 let uniqueInstances = new Set();
 let uniqueChannelNames = {};
@@ -913,10 +915,16 @@ setInstances(Array.from(uniqueInstances));
   
   return (
     <div className="max-h-screen max-w-full">
-    <div>
-    <Navbar />
+    <div className="z-10">
+    <Navbar className="z-10"/>
     </div>
-    <div className="">
+    {responseData.length === 0  ? (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl text-center text-gray-600">No data available right now</p>
+      </div>
+    ): 
+    (
+      <div className="-z10">
     <Box p={1}>
       <Typography variant="h6" align="center" gutterBottom>
       Net Promoter Score
@@ -1324,6 +1332,7 @@ setInstances(Array.from(uniqueInstances));
       )}
     </Box>
     </div>
+    )}
   </div>
   )
 }
