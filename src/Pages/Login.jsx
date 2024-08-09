@@ -122,7 +122,7 @@ const Login = () => {
 
       if (loginResponse.success) {
         // No need to get an access token separately
-        navigate("/voc/reports");
+        navigate("/reports");
       } else {
         setStatusMessage("Login failed after signup.");
         console.error("Login failed after signup.");

@@ -10,12 +10,12 @@ import TestPage from './Pages/TestPage';
 const App = () => {
   return (
     <Routes>
-      <Route path="/voc/" element={<Login />} />
-      <Route path="/voc/reports" element={<Report />} />
-      <Route path="/voc/userdetails" element={<UserDetails />} />
-      <Route path="/voc/scaledetails" element={<ScaleDetails />} />
-      <Route path="/voc/scale" element={<Scales />} />
-      <Route path="/voc/report" element={<OpenReportPage />} />
+      <Route path="/" element={<Login />} />
+      <Route path="/reports" element={<Report />} />
+      <Route path="/userdetails" element={<UserDetails />} />
+      <Route path="/scaledetails" element={<ScaleDetails />} />
+      <Route path="/scale" element={<Scales />} />
+      <Route path="/report" element={<OpenReportPage />} />
       <Route path="/test" element={<TestPage />} /> 
     </Routes>
   );

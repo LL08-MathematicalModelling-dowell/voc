@@ -69,7 +69,7 @@ const Navbar = () => {
 
               <li>
                 <NavLink
-                  to="/voc/reports"
+                  to="/reports"
                   className={({ isActive }) =>
                     isActive ? "font-bold text-deepblue" : ""
                   }
@@ -80,7 +80,7 @@ const Navbar = () => {
               </li>
               <li>
                 <NavLink
-                  to="/voc/userdetails"
+                  to="/userdetails"
                   className={({ isActive }) =>
                     isActive ? "font-bold text-deepblue" : ""
                   }
@@ -91,7 +91,7 @@ const Navbar = () => {
               </li>
               <li>
                 <NavLink
-                  to="/voc/scaledetails"
+                  to="/scaledetails"
                   className={({ isActive }) =>
                     isActive ? "font-bold text-deepblue" : ""
                   }
@@ -108,7 +108,7 @@ const Navbar = () => {
 
             <li>
               <NavLink
-                to="/voc/reports"
+                to="/reports"
                 className={({ isActive }) =>
                   isActive ? "font-bold text-deepblue" : ""
                 }
@@ -118,7 +118,7 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink
-                to="/voc/userdetails"
+                to="/userdetails"
                 className={({ isActive }) =>
                   isActive ? "font-bold text-deepblue" : ""
                 }
@@ -128,7 +128,7 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink
-                to="/voc/scaledetails"
+                to="/scaledetails"
                 className={({ isActive }) =>
                   isActive ? "font-bold text-deepblue" : ""
                 }
@@ -161,7 +161,7 @@ const Navbar = () => {
                     <li className="flex items-center py-2 border-b" onClick={logOut}>
                       <BiLogOut className="size-4.5" />
                       <a
-                        href="#"
+                        href="/"
                         className="block px-4 py-2 text-sm font-semibold text-black hover:text-green-800"
                       >
                       Log out
