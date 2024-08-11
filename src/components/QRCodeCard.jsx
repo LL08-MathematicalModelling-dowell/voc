@@ -1,10 +1,25 @@
 import { LinkIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
+import { saveAs } from 'file-saver';
 
 // eslint-disable-next-line react/prop-types
-const QRCodeCard = ({ imageSrc,   instanceName,   scaleLink,   qrCodeLink,   reportLink,  onClick,   type,
-}) => {
+const QRCodeCard = ({ imageSrc, instanceName, scaleLink, qrCodeLink, reportLink, onClick, type }) => {
   const [alert, setAlert] = useState("");
+  const [isHovered, setIsHovered] = useState(false);
+
+  const downloadImage = () => {
+    saveAs(imageSrc, "qrCode.png"); 
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    setAlert("Click to download");
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setAlert("");
+  };
 
   const handleCopy = (textToCopy) => {
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -14,15 +29,27 @@ const QRCodeCard = ({ imageSrc,   instanceName,   scaleLink,   qrCodeLink,   rep
   };
 
   return (
-    <div className="relative max-w-sm bg-lightblue border border-deepblue shadow-xl rounded-lg overflow-hidden px-2 py-3 cursor-pointer">
-      <div className="flex items-center flex-col ">
-        <img
-          className="w-36 h-36 my-4"
-          src={imageSrc}
-          alt="QR Code"
-        />
+    <div className="max-w-sm bg-lightblue border border-deepblue shadow-xl rounded-lg overflow-hidden px-2 py-3 cursor-pointer relative">
+      <div className="flex items-center flex-col relative">
+        <div className="relative">
+          <a
+            href={imageSrc}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={downloadImage}
+          >
+            <img
+              className="w-36 h-36 my-4"
+              src={imageSrc}
+              alt="QR Code"
+            />
+          </a>
+        </div>
         <div className="border-t border-[1.3px] w-full border-gray-600 mb-2"></div>
-        <div className="flex flex-col gap-3" onClick={onClick}>
+        <div
+          className="flex flex-col gap-3"
+          onClick={onClick}
+        >
           <p className="font-bold text-[14px] flex gap-3 text-left">
             Name: <span className="font-normal">{instanceName}</span>
           </p>
@@ -62,11 +89,7 @@ const QRCodeCard = ({ imageSrc,   instanceName,   scaleLink,   qrCodeLink,   rep
           )}
         </div>
       </div>
-      {alert && (
-        <div className="absolute top-2 right-2 p-2 bg-green-200 text-green-800 rounded">
-          {alert}
-        </div>
-      )}
+      {alert && <div className="absolute top-2 right-2 p-2 bg-green-200 text-green-800 rounded">{alert}</div>}
     </div>
   );
 };
