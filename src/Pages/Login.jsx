@@ -1,24 +1,39 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../assets/VOC.png";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [healthStatus, setHealthStatus] = useState(null);
   const [formData, setFormData] = useState({
-    workspace: "6385c0f18eca0fb652c94558",
-    portfolioId: "manish",
-    password: "manish",
+    workspace_name: "", 
+    portfolio: "",
+    password: "",
   });
   const [statusMessage, setStatusMessage] = useState("");
 
+  
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const workspaceName = queryParams.get('workspace_name');
+  
+    if (workspaceName) {
+      setFormData(prevData => ({
+        ...prevData,
+        workspace_name: workspaceName
+      }));
+    }
+  
+    checkServerHealth();
+  }, [location.search]);
+
   const checkServerHealth = async () => {
     try {
-      const response = await fetch(
-        "https://100035.pythonanywhere.com/voc/api/v1/health-check/"
-      );
+      const response = await fetch("https://100035.pythonanywhere.com/voc/api/v1/health-check/");
       const healthData = await response.json();
       setHealthStatus(healthData.success ? "healthy" : "Unhealthy");
     } catch (error) {
@@ -26,14 +41,10 @@ const Login = () => {
     }
   };
 
-  useEffect(() => {
-    checkServerHealth();
-  }, []);
-
   const login = async (credentials) => {
     try {
       const response = await fetch(
-        "https://100035.pythonanywhere.com/voc/api/v1/user-management/?type=login",
+        "https://100035.pythonanywhere.com/voc/api/v1/user-management/?type=authenticate_user",
         {
           method: "POST",
           headers: {
@@ -44,43 +55,18 @@ const Login = () => {
       );
 
       const result = await response.json();
+      
       if (response.ok && result.success) {
-        console.log("Login successful:", result);
         localStorage.setItem("refreshToken", result.refresh_token);
         localStorage.setItem("accessToken", result.access_token);
-        localStorage.setItem("workspaceId", credentials.workspace_id); 
+        localStorage.setItem("workspaceName", credentials.workspace_name);
+
         return result;
       } else {
-        console.error("Login failed:", result);
         throw new Error(result.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);
-      throw error;
-    }
-  };
-
-  const signup = async (credentials) => {
-    try {
-      const response = await fetch(
-        "https://100035.pythonanywhere.com/voc/api/v1/user-management/?type=sign-up",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(credentials),
-        }
-      );
-      const result = await response.json();
-      if (response.ok && result.success) {
-        localStorage.setItem("workspaceId", credentials.workspace); // Store workspace_id
-        return result;
-      } else {
-        throw new Error(result.message || "Signup failed");
-      }
-    } catch (error) {
-      console.error("Signup error:", error);
       throw error;
     }
   };
@@ -90,52 +76,26 @@ const Login = () => {
     setLoading(true);
 
     const credentials = {
-      workspace_id: formData.workspace,
-      portfolio: formData.portfolioId,
+      workspace_name: formData.workspace_name,
+      portfolio: formData.portfolio,
       password: formData.password,
     };
 
     try {
-      let loginResponse;
-      try {
-        loginResponse = await login(credentials);
-      } catch (error) {
-        if (error.message === "User does not exist") {
-          setStatusMessage("User does not exist, attempting to sign up...");
-          const signupResponse = await signup(credentials);
-          if (signupResponse.success) {
-            setStatusMessage("Successfully signed up, attempting to log in...");
-            loginResponse = await login(credentials);
-          } else {
-            setStatusMessage("Signup failed.");
-            console.error("Signup failed:", signupResponse);
-            setLoading(false);
-            return;
-          }
-        } else {
-          setStatusMessage("Login error.");
-          console.error("Login error:", error);
-          setLoading(false);
-          return;
-        }
-      }
-
+      const loginResponse = await login(credentials);
       if (loginResponse.success) {
-        // No need to get an access token separately
         navigate("/reports");
       } else {
-        setStatusMessage("Login failed after signup.");
-        console.error("Login failed after signup.");
+        setStatusMessage("Login failed.");
+        console.error("Login failed:", loginResponse);
       }
     } catch (error) {
       if (error.message.includes("<!DOCTYPE")) {
-        setStatusMessage(
-          "Received HTML instead of JSON. Possible server issue."
-        );
+        setStatusMessage("Received HTML instead of JSON. Possible server issue.");
         console.error("Received HTML instead of JSON. Possible server issue.");
       } else {
-        setStatusMessage("Error during login/signup.");
-        console.error("Error during login/signup:", error);
+        setStatusMessage("Error during login.");
+        console.error("Error during login:", error);
       }
     } finally {
       setLoading(false);
@@ -170,20 +130,21 @@ const Login = () => {
         >
           <input
             type="text"
-            name="workspace"
-            placeholder="Select Workspace"
+            name="workspace_name"
+            placeholder="Enter Workspace Name"
             className="cursor-pointer bg-gray-100 border flex items-center justify-between font-medium p-2.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             required
-            value={formData.workspace}
+            value={formData.workspace_name}
             onChange={handleChange}
+            readOnly={!!formData.workspace_name} // Make input read-only if workspace_name is present
           />
           <input
             type="text"
-            name="portfolioId"
+            name="portfolio"
             placeholder="Enter Portfolio ID"
             className="cursor-pointer bg-gray-100 border flex items-center justify-between font-medium p-2.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             required
-            value={formData.portfolioId}
+            value={formData.portfolio}
             onChange={handleChange}
           />
           <input

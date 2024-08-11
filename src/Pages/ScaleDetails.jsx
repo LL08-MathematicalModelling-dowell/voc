@@ -4,6 +4,7 @@ import QRCodeCard from "../components/QRCodeCard";
 import { FaCirclePlus } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { decodeToken } from "../utils/tokenUtils";
+import axios from "axios";
 
 function getInstanceDisplayName(url) {
   try {
@@ -20,6 +21,7 @@ const ScaleDetails = () => {
   const [qrCodes, setQrCodes] = useState([]);
   const [alert, setAlert] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showCreateButton, setShowCreateButton] = useState(false);
   const navigate = useNavigate();
   const accessToken = localStorage.getItem("accessToken");
   const refreshToken = localStorage.getItem("refreshToken");
@@ -43,19 +45,18 @@ const ScaleDetails = () => {
         const workspaceId = decodedPayload.workspace_id;
         const portfolio = decodedPayload.portfolio;
 
-        const response = await fetch(
+        const response = await axios.post(
           "https://100035.pythonanywhere.com/voc/api/v1/scale-management/?type=scale_details",
+          { workspace_id: workspaceId, portfolio },
           {
-            method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ workspace_id: workspaceId, portfolio }),
           }
         );
 
-        const data = await response.json();
+        const data = response.data;
         console.log("Scale Details Response:", data);
 
         if (data.success && data.response.length > 0) {
@@ -64,7 +65,7 @@ const ScaleDetails = () => {
           localStorage.setItem("scale_id", scaleId);
         } else {
           setAlert("No scale found. Please create a scale for yourself.");
-          handleButtonClick(); // Create a new scale if none exists
+          setShowCreateButton(true); // Show the button only when there's no scale
         }
       } catch (error) {
         console.error("Error fetching scale details:", error.message);
@@ -90,38 +91,38 @@ const ScaleDetails = () => {
       const portfolio = decodedPayload.portfolio;
       const hardCodedData = {
         workspace_id: workspaceId,
-        username: "manish_test error_login",
+        username: decodedPayload.workspace_owner_name,
         portfolio,
       };
 
-      const response = await fetch(
+      const response = await axios.post(
         "https://100035.pythonanywhere.com/voc/api/v1/scale-management/?type=save_scale_details",
+        hardCodedData,
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-          body: JSON.stringify(hardCodedData),
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
       console.log("Create Scale Response:", data);
 
-      if (response.ok) {
+      if (response.status === 200) {
         const newId = qrCodes.length ? qrCodes[qrCodes.length - 1].id + 1 : 1;
         setQrCodes([
           ...qrCodes,
           {
             id: newId,
-            imageSrc: Code, // Ensure Code is imported correctly
+            imageSrc: "path_to_default_image", // Ensure default image is available
             qrDetails: data.qrDetails || `QR Code ${newId}`,
             scaleDetails: data.scaleDetails || "Scale Details",
           },
         ]);
         setAlert("QR Code card created successfully!");
         localStorage.setItem("scale_id", data.scale_id);
+        setShowCreateButton(false); // Hide the button after creation
       } else {
         setAlert(data.message || "Failed to create card.");
       }
@@ -159,7 +160,7 @@ const ScaleDetails = () => {
                   <div className="flex-col flex gap-2">
                     <h1 className="text-[25px] font-bold font-poppins">Scale Details</h1>
                     <div className="flex flex-col md:flex-row gap-6 flex-wrap">
-                      {qrCode.links_details.map((link, idx) => (
+                      {qrCode.links_details?.map((link, idx) => (
                         <QRCodeCard
                           key={idx}
                           imageSrc={link.qrcode_image_url}
@@ -183,14 +184,30 @@ const ScaleDetails = () => {
                       />
                     </div>
                   </div>
+                  <div className="flex-col flex gap-2">
+                    <h1 className="text-[25px] font-bold font-poppins">Login Details</h1>
+                    <div className="flex flex-col md:flex-row gap-6">
+                      {qrCode.login && (
+                        <QRCodeCard
+                          imageSrc={qrCode.login.qrcode_image_url}
+                          instanceName={qrCode.username}
+                          type="login"
+                          qrCodeLink={qrCode.login.qrcode_image_url}
+                          loginLink={qrCode.login.login_link}
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
-              <button
-                onClick={handleButtonClick}
-                className="bg-deepblue text-white shadow-xl px-2 py-2 rounded-full mt-4 md:mt-0 fixed md:bottom-[90px] bottom-[50px] md:right-12 right-8 z-2"
-              >
-                <FaCirclePlus className="size-8" />
-              </button>
+              {showCreateButton && (
+                <button
+                  onClick={handleButtonClick}
+                  className="bg-deepblue text-white shadow-xl px-2 py-2 rounded-full mt-4 md:mt-0 fixed md:bottom-[90px] bottom-[50px] md:right-12 right-8 z-10"
+                >
+                  <FaCirclePlus className="text-xl" />
+                </button>
+              )}
             </div>
           )}
         </div>
